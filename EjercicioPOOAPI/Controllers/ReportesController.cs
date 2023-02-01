@@ -1,11 +1,13 @@
 ﻿using EjercicioPOO.Application.Services.Reporte;
 using EjercicioPOO.Enum;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EjercicioPOO.API.Controllers
 {
     [Route("api/reportes")]
     [ApiController]
+    [Authorize]
     public class ReportesController : ControllerBase
     {
         private readonly IReporteService _reporteService;

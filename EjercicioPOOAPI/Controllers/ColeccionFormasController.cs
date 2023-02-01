@@ -1,11 +1,13 @@
 ﻿using EjercicioPOO.Application.Dto;
 using EjercicioPOO.Application.Services.ColeccionFormas;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EjercicioPOO.API.Controllers
 {
     [Route("api")]
     [ApiController]
+    [Authorize]
     public class ColeccionFormasController : ControllerBase
     {
         private readonly IColeccionFormasService _coleccionFormasService;
