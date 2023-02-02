@@ -1,0 +1,17 @@
+﻿@page
+@model FrontEnd.Pages.ReportesModel
+@{
+    ViewData["Title"] = "Reportes Formas Geometricas";
+}
+<div>
+    <select class="form-select" id="reportesList">
+        <option selected>Reportes disponibles para ver</option>
+        <option value="ten">10</option>
+        <option value="eleven">11</option>
+    </select>
+</div>
+<div id="content"></div>
+@section Scripts
+{
+    <script src="~/js/Reportes.js"></script>
+}
