@@ -1,5 +1,11 @@
 ﻿$('#formLogin').find('#loginSpinner').hide();
 $('#formLogin').on('click', '#loginButton', {}, function () {
+    if (!inputCompleto($('#inputUsername'))) {
+        return;
+    }
+    if (!inputCompleto($('#inputPassword'))) {
+        return;
+    }
     let uriLogin = 'https://localhost:7045/api/Login';
     let data = JSON.stringify({
         "user": $('#formLogin').find('#inputUsername').val(),
