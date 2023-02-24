@@ -37,6 +37,7 @@ namespace EjercicioPOO.Domain
         public DbSet<Circulo> Circulos { get; set; }
         public DbSet<Trapecio> Trapecios { get; set; }
         public DbSet<TrianguloEquilatero> TrianguloEquilateros { get; set; }
+        public DbSet<Usuario> Usuarios { get; set; }
 
     }
 }

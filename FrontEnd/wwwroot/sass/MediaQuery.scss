@@ -1,0 +1,58 @@
+﻿@import "_media-queries.scss";
+
+#contenedor {
+    width: 960px;
+    margin: 0 auto;
+}
+
+#columna-izq {
+    background-color: sandybrown;
+    width: 700px;
+    float: left;
+}
+
+#columna-der {
+    width: 260px;
+    float: left;
+    background-color: violet;
+}
+
+@include sm {
+    #contenedor {
+        width: 100%;
+    }
+
+    #columna-izq {
+        width: 70%;
+        background-color: palegreen;
+    }
+
+    #columna-der {
+        width: 30%;
+        background-color: darkslateblue;
+    }
+}
+
+@include md{
+    #columna-izq {
+        width: 100%;
+        background-color: bisque;
+    }
+
+    #columna-der {
+        width: 100%;
+        background-color: chartreuse;
+    }
+}
+
+@include lg {
+    #columna-izq {
+        width: 60%;
+        background-color: cornflowerblue;
+    }
+
+    #columna-der {
+        width: 40%;
+        background-color: chocolate;
+    }
+}

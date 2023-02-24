@@ -1,0 +1,87 @@
+#contenedor {
+  width: 960px;
+  margin: 0 auto; }
+
+#columna-izq {
+  background-color: sandybrown;
+  width: 700px;
+  float: left; }
+
+#columna-der {
+  width: 260px;
+  float: left;
+  background-color: violet; }
+
+/* typical phone screen resolution */
+@media only screen and (max-width: 667px) {
+  #contenedor {
+    width: 100%; }
+
+  #columna-izq {
+    width: 70%;
+    background-color: palegreen; }
+
+  #columna-der {
+    width: 30%;
+    background-color: darkslateblue; } }
+/* landscape orientation */
+@media only screen and (min-width: 375px) and (max-width: 667px) and (orientation: landscape) {
+  #contenedor {
+    width: 100%; }
+
+  #columna-izq {
+    width: 70%;
+    background-color: palegreen; }
+
+  #columna-der {
+    width: 30%;
+    background-color: darkslateblue; } }
+/* portrait orientation */
+@media only screen and (min-width: 375px) and (max-width: 667px) and (orientation: portrait) {
+  #contenedor {
+    width: 100%; }
+
+  #columna-izq {
+    width: 70%;
+    background-color: palegreen; }
+
+  #columna-der {
+    width: 30%;
+    background-color: darkslateblue; } }
+/* typical tablet screen resolution */
+@media only screen and (max-width: 834px) {
+  #columna-izq {
+    width: 100%;
+    background-color: bisque; }
+
+  #columna-der {
+    width: 100%;
+    background-color: chartreuse; } }
+/* landscape orientation */
+@media only screen and (min-width: 768px) and (max-width: 834px) and (orientation: landscape) {
+  #columna-izq {
+    width: 100%;
+    background-color: bisque; }
+
+  #columna-der {
+    width: 100%;
+    background-color: chartreuse; } }
+/* portrait orientation */
+@media only screen and (min-width: 768px) and (max-width: 834px) and (orientation: portrait) {
+  #columna-izq {
+    width: 100%;
+    background-color: bisque; }
+
+  #columna-der {
+    width: 100%;
+    background-color: chartreuse; } }
+@media only screen and (min-width: 1224px) {
+  #columna-izq {
+    width: 60%;
+    background-color: cornflowerblue; }
+
+  #columna-der {
+    width: 40%;
+    background-color: chocolate; } }
+
+/*# sourceMappingURL=MediaQuery.css.map */

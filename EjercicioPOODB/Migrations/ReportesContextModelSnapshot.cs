@@ -205,6 +205,31 @@ namespace EjercicioPOO.Domain.Migrations
                     b.ToTable("TrianguloEquilateros");
                 });
 
+            modelBuilder.Entity("EjercicioPOO.Domain.Entitys.Usuario", b =>
+                {
+                    b.Property<int>("IdUser")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdUser"), 1L, 1);
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Sal")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("User")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("IdUser");
+
+                    b.ToTable("Usuarios");
+                });
+
             modelBuilder.Entity("EjercicioPOO.Domain.Entitys.Circulo", b =>
                 {
                     b.HasOne("EjercicioPOO.Domain.Entitys.FormaGeometrica", "FormaGeometrica")

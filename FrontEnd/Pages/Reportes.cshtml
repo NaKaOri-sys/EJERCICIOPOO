@@ -1,0 +1,34 @@
+﻿@page
+@model FrontEnd.Pages.ReportesModel
+@{
+    ViewData["Title"] = "Reportes Formas Geometricas";
+}
+<div class="modal" tabindex="-1" id="modalError">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sin acceso!!!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="crossButton"></button>
+            </div>
+            <div class="modal-body">
+                <img src="~/images/notPassNew.png" />
+                <p>Por favor <a asp-page="Login"><u>inicie sesión</u></a> o <a asp-page="Register"><u>registrese</u></a> para poder acceder a este contenido.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeButton">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    <select class="form-select" id="reportesList">
+    <option selected disabled>Reportes disponibles para ver</option>
+        <option value="ten">10</option>
+        <option value="eleven">11</option>
+    </select>
+</div>
+<div id="content"></div>
+@section Scripts
+{
+<script src="~/js/Reportes.js"></script>
+}

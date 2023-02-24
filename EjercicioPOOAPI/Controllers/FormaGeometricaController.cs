@@ -1,12 +1,14 @@
 ﻿using EjercicioPOO.Application.Dto;
 using EjercicioPOO.Application.Services.FormaGeometricaService;
 using EjercicioPOO.Enum;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EjercicioPOO.API.Controllers
 {
     [Route("api/formaGeometrica")]
     [ApiController]
+    [Authorize]
     public class FormaGeometricaController : ControllerBase
     {
         private readonly IFormaGeometricaService _formaGeometrica;
