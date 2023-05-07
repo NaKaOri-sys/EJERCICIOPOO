@@ -26,11 +26,6 @@ namespace EjercicioPOO.API.Controllers
 
             var result = _login.GenerateBearer(login);
 
-            if (result == null)
-                return Forbid();
-            if (result.Equals("404"))
-                return NotFound();
-
             return Ok(result);
         }
     }

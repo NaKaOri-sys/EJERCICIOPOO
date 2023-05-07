@@ -1,4 +1,6 @@
 using AutoMapper;
+using EjercicioPOO.API.Extensions;
+using EjercicioPOO.Application.CustomExceptionMiddleware;
 using EjercicioPOO.Application.Services.ColeccionFormas;
 using EjercicioPOO.Application.Services.FormaGeometricaService;
 using EjercicioPOO.Application.Services.Login;
@@ -69,6 +71,10 @@ app.UseCors(x => x
             .AllowAnyMethod()
             .AllowAnyHeader());
 app.UseHttpsRedirection();
+var logger = app.Services.GetRequiredService<ILogger<ExceptionMiddleware>>();
+//app.ConfigureExceptionHandler(logger);
+app.ConfigureCustomExceptionMiddleware();
+
 
 app.UseAuthentication();
 app.UseAuthorization();

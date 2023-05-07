@@ -20,19 +20,15 @@ namespace EjercicioPOO.API.Controllers
         [HttpPost]
         public ActionResult Post(int ID, IdiomasEnum idioma)
         {
-            if (ID <= 0)
-                return BadRequest();
-            var response = _reporteService.CreateReporte(ID, idioma);
+            _reporteService.CreateReporte(ID, idioma);
 
-            return Ok(response);
+            return Ok();
         }
 
         [HttpGet]
         public string Get(int ID)
         {
             var reporte = _reporteService.GetReporte(ID);
-            if (reporte == null)
-                throw new Exception("ERROR!");
 
             return reporte;
         }
@@ -40,27 +36,17 @@ namespace EjercicioPOO.API.Controllers
         [HttpDelete]
         public ActionResult Delete(int ID)
         {
-            if (ID <= 0)
-                return BadRequest("Debe ingresar un ID mayor a 0.");
+            _reporteService.DeleteReporte(ID);
 
-            var reporte = _reporteService.DeleteReporte(ID);
-            if (reporte == null)
-                return NotFound("No se encontró un reporte para el ID solicitado.");
-
-            return Ok("Se borro exitosamente el reporte.");
+            return Ok();
         }
 
         [HttpPut]
         public ActionResult Put(int IdReporte, int ID, IdiomasEnum idiomas)
         {
-            if (IdReporte <= 0 || ID <= 0)
-                return BadRequest("El IdReporte o IdColeccion deben ser mayor a 0");
-            var response = _reporteService.UpdateReporte(IdReporte, ID, idiomas);
+            _reporteService.UpdateReporte(IdReporte, ID, idiomas);
 
-            if (response == null)
-                throw new Exception("ERROR!!!");
-
-            return Ok(response);
+            return Ok();
         }
     }
 }

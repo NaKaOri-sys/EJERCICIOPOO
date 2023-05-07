@@ -1,11 +1,11 @@
 ﻿using EjercicioPOO.API.Helper;
 using EjercicioPOO.Application.Dto;
+using EjercicioPOO.Application.Exceptions;
 using EjercicioPOO.Application.Services.Repository;
 using EjercicioPOO.Domain.Entitys;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -28,7 +28,9 @@ namespace EjercicioPOO.Application.Services.Login
         {
             var usuario = _genericRepository.GetAll().FirstOrDefault(x => x.User.Equals(login.User));
             if (usuario == null)
-                return "404";
+            {
+                throw new NotFoundException("Usuario no encontrado");
+            }
             if(HashHelper.VerifyPassword(login.Password, usuario.Password, usuario.Sal))
             {
                 var secretKey = _configuration.GetSection("SecretKey");
@@ -50,7 +52,7 @@ namespace EjercicioPOO.Application.Services.Login
 
                 return token_bearer;
             }
-            return null;
+            throw new InternalErrorException("Hubo un error al recuperar el token con el usuario ingresado.");
         } 
     }
 }

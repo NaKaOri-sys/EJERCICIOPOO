@@ -1,4 +1,5 @@
 ﻿using EjercicioPOO.Application.Dto;
+using EjercicioPOO.Application.Exceptions;
 using EjercicioPOO.Application.Services.Repository;
 using EjercicioPOO.Application.Traducciones;
 using EjercicioPOO.Domain.Entitys;
@@ -31,29 +32,27 @@ namespace EjercicioPOO.Application.Services.Reporte
             _trapecioRepository = trapecioRepository;
         }
 
-        public string CreateReporte(int IdColeccion, IdiomasEnum idioma)
+        public void CreateReporte(int IdColeccion, IdiomasEnum idioma)
         {
-            if (IdColeccion <= 0)
+            if (IdColeccion <= 0 || idioma.Equals(0))
             {
-                return null;
+                throw new BadRequestException("El Id debe ser mayor a 0, se debe seleccionar un idioma para continuar.");
             }
 
-            var reporte = new Reportes 
+            var reporte = new Reportes
             {
                 ColeccionFormas = _coleccionFormasRepository.GetById(IdColeccion),
                 Idioma = _idiomasRepository.GetById((int)idioma)
             };
             _reportesRepository.Insert(reporte);
             _reportesRepository.Save();
-
-            return "OK";
         }
 
-        public string UpdateReporte(int IdReporte, int IdColeccion, IdiomasEnum idioma)
+        public void UpdateReporte(int IdReporte, int IdColeccion, IdiomasEnum idioma)
         {
-            if (IdReporte <= 0 || IdColeccion <= 0)
+            if (IdReporte <= 0 || IdColeccion <= 0 || idioma.Equals(0))
             {
-                return null;
+                throw new BadRequestException("El IdReporte debe ser mayor a 0, el IdColección debe ser mayor a 0, debe ingresar un idioma para continuar.");
             }
 
             var reporte = _reportesRepository.GetById(IdReporte);
@@ -62,8 +61,6 @@ namespace EjercicioPOO.Application.Services.Reporte
 
             _reportesRepository.Update(reporte);
             _reportesRepository.Save();
-
-            return "OK";
         }
 
         public string GetReporte(int IdReporte)
@@ -74,13 +71,13 @@ namespace EjercicioPOO.Application.Services.Reporte
                                              .FirstOrDefault(p => p.ReportesID == IdReporte);
             if (reporte == null)
             {
-                return null;
+                throw new NotFoundException("No se pudo encontrar el reporte solicitado.");
             }
-            var dto = new ReporteDto 
+            var dto = new ReporteDto
             {
                 ReporteID = reporte.ReportesID,
-                Idioma = new IdiomaDto { IdiomaID = reporte.IdiomasID, Nombre = reporte.Idioma.Idioma},
-                ColeccionFormas = new ColeccionFormasDto 
+                Idioma = new IdiomaDto { IdiomaID = reporte.IdiomasID, Nombre = reporte.Idioma.Idioma },
+                ColeccionFormas = new ColeccionFormasDto
                 {
                     ColeccionId = reporte.ColeccionFormas.ColeccionesFormasID,
                     formasGeometricas = MappingFormasGeometricasToDto(reporte.ColeccionFormas.FormasGeometricas)
@@ -95,16 +92,16 @@ namespace EjercicioPOO.Application.Services.Reporte
         private List<FormaGeometricaDto> MappingFormasGeometricasToDto(List<FormaGeometrica> formasGeometricas)
         {
             var result = new List<FormaGeometricaDto>();
-            foreach (var forma in formasGeometricas) 
+            foreach (var forma in formasGeometricas)
             {
-                var dto = new FormaGeometricaDto 
-                { 
+                var dto = new FormaGeometricaDto
+                {
                     FormaGeometricaID = forma.FormaGeometricaID,
-                    Lado = forma.Lado,  
+                    Lado = forma.Lado,
                     Tipo = (FormasEnum)forma.TipoID,
                     TipoID = forma.TipoID
                 };
-                if(forma.TipoID == 4)
+                if (forma.TipoID == 4)
                 {
                     var trapecio = _trapecioRepository.GetAll().FirstOrDefault(x => x.FormaGeometricaID == forma.FormaGeometricaID);
                     dto.LadoBase = trapecio.BaseMayor;
@@ -118,16 +115,21 @@ namespace EjercicioPOO.Application.Services.Reporte
             return result;
         }
 
-        public string DeleteReporte(int IdReporte)
+        public void DeleteReporte(int IdReporte)
         {
             if (IdReporte <= 0)
             {
-                return null;
+                throw new BadRequestException("El IdReporte debe ser mayor a 0.");
             }
-            _reportesRepository.Delete(IdReporte);
-            _reportesRepository.Save();
-
-            return "OK";
+            try
+            {
+                _reportesRepository.Delete(IdReporte);
+                _reportesRepository.Save();
+            }
+            catch (Exception ex)
+            {
+                throw new InternalErrorException(ex.Message);
+            }
         }
 
         public static string Imprimir(ReporteDto reporte)
