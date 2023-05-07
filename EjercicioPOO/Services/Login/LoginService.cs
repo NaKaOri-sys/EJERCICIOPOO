@@ -16,20 +16,23 @@ namespace EjercicioPOO.Application.Services.Login
     public class LoginService : ILoginService
     {
         private readonly IGenericRepository<Usuario> _genericRepository;
+        private readonly IConfiguration _configuration;
 
-        public LoginService(IGenericRepository<Usuario> genericRepository) 
+        public LoginService(IGenericRepository<Usuario> genericRepository, IConfiguration configuration)
         {
             _genericRepository = genericRepository;
+            _configuration = configuration;
         }
 
-        public string GenerateBearer(LoginDto login, string secretKey) 
+        public string GenerateBearer(LoginDto login) 
         {
             var usuario = _genericRepository.GetAll().FirstOrDefault(x => x.User.Equals(login.User));
             if (usuario == null)
                 return "404";
             if(HashHelper.VerifyPassword(login.Password, usuario.Password, usuario.Sal))
             {
-                var key = Encoding.ASCII.GetBytes(secretKey);
+                var secretKey = _configuration.GetSection("SecretKey");
+                var key = Encoding.ASCII.GetBytes(secretKey.Value);
 
                 var claims = new ClaimsIdentity();
                 claims.AddClaim(new Claim(ClaimTypes.NameIdentifier, login.User));
