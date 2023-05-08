@@ -1,5 +1,6 @@
 ﻿using EjercicioPOO.API.Helper;
 using EjercicioPOO.Application.Dto;
+using EjercicioPOO.Application.Exceptions;
 using EjercicioPOO.Application.Services.Repository;
 using EjercicioPOO.Domain.Entitys;
 using System;
@@ -21,7 +22,7 @@ namespace EjercicioPOO.Application.Services.Usuarios
         {
             var usuarioExistente = _usuariosRepository.GetAll().Where(x => x.User.Equals(usuario.User)).FirstOrDefault();
             if (usuarioExistente != null)
-                return null;
+                throw new InternalErrorException("El usuario ya existe.");
             var hashPass = HashHelper.HashPasword(usuario.Password);
             var usuarioNuevo = new Usuario { User = usuario.User, Password = hashPass.Password, Sal = hashPass.Salt};
             _usuariosRepository.Insert(usuarioNuevo);
@@ -47,23 +48,21 @@ namespace EjercicioPOO.Application.Services.Usuarios
             return usuarios;
         }
 
-        public string DeleteUser(UsuarioDto usuario)
+        public void DeleteUser(UsuarioDto usuario)
         {
             try
             {
                 var usuarioExistente = _usuariosRepository.GetAll().Where(x => x.User == usuario.User).FirstOrDefault();
                 _usuariosRepository.Delete(usuarioExistente);
                 _usuariosRepository.Save();
-
-                return "Usuario eliminado con éxito.";
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return null;
+                throw new InternalErrorException(ex.Message);
             }
         }
         
-        public string UpdateUser(UsuarioDto usuario)
+        public void UpdateUser(UsuarioDto usuario)
         {
             try
             {
@@ -72,12 +71,10 @@ namespace EjercicioPOO.Application.Services.Usuarios
                 var usuarioNuevo = new Usuario { User = usuario.User, Password = hashPass.Password, Sal = hashPass.Salt };
                 _usuariosRepository.Update(usuarioExistente);
                 _usuariosRepository.Save();
-
-                return "Usuario actualizado con éxito.";
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return null;
+                throw new InternalErrorException(ex.Message);
             }
         }
     }

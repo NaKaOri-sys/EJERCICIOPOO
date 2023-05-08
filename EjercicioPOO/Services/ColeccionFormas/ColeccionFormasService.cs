@@ -1,4 +1,5 @@
 ﻿using EjercicioPOO.Application.Dto;
+using EjercicioPOO.Application.Exceptions;
 using EjercicioPOO.Application.Services.Repository;
 using EjercicioPOO.Domain.Entitys;
 using Microsoft.EntityFrameworkCore;
@@ -20,19 +21,25 @@ namespace EjercicioPOO.Application.Services.ColeccionFormas
             _formaGeometricaRepository = formaGeometricaRepository;
         }
 
-        public string CreateColeccion(int[] IDsFormasGeometricas)
+        public void CreateColeccion(int[] IDsFormasGeometricas)
         {
-            var coleccion = new ColeccionesFormas();
-            foreach (var ID in IDsFormasGeometricas)
+            try
             {
-                var entity = _formaGeometricaRepository.GetById(ID);
-                coleccion.FormasGeometricas.Add(entity);
-                _coleccionFormasRepository.Insert(coleccion);
+                var coleccion = new ColeccionesFormas();
+                foreach (var ID in IDsFormasGeometricas)
+                {
+                    var entity = _formaGeometricaRepository.GetById(ID);
+                    coleccion.FormasGeometricas.Add(entity);
+                    _coleccionFormasRepository.Insert(coleccion);
+                }
+
+                _coleccionFormasRepository.Save();
             }
+            catch (Exception ex)
+            {
 
-            _coleccionFormasRepository.Save();
-
-            return "Se creo con éxito la colección.";
+                throw new InternalErrorException(ex.Message);
+            }
         }
 
         public ColeccionFormasDto GetColeccion(int IdColeccion)
@@ -43,7 +50,7 @@ namespace EjercicioPOO.Application.Services.ColeccionFormas
                                                       .FirstOrDefault(p => p.ColeccionesFormasID == IdColeccion);
             if (coleccion == null)
             {
-                throw new Exception("Error Get Coleccion");
+                throw new NotFoundException("No se pudo obtener la colección indicada.");
             }
 
             var dto = new ColeccionFormasDto
@@ -83,17 +90,15 @@ namespace EjercicioPOO.Application.Services.ColeccionFormas
             return colecciones;
         }
 
-        public string DeleteColeccion(int IdColeccion)
+        public void DeleteColeccion(int IdColeccion)
         {
             var coleccion = _coleccionFormasRepository.GetById(IdColeccion);
             if (coleccion == null)
-                return null;
+                throw new NotFoundException("No se pudo encontrar la colección indicada.");
             DeleteReferenceInFormaGeometricas(coleccion);
 
             _coleccionFormasRepository.Delete(coleccion);
             _coleccionFormasRepository.Save();
-
-            return "OK";
         }
 
         private void DeleteReferenceInFormaGeometricas(ColeccionesFormas coleccion)
@@ -106,33 +111,39 @@ namespace EjercicioPOO.Application.Services.ColeccionFormas
             _formaGeometricaRepository.Save();
         }
 
-        public string UpdateColeccion(int IdColeccion, int[] IDsFormasGeometricas)
+        public void UpdateColeccion(int IdColeccion, int[] IDsFormasGeometricas)
         {
             var coleccion = _coleccionFormasRepository.GetById(IdColeccion);
             UpdateRelationships(coleccion, IDsFormasGeometricas);
 
             if (coleccion == null)
             {
-                return null;
+                throw new InternalErrorException("No se pudo actualizar la colección indicada.");
             }
             _coleccionFormasRepository.Save();
-
-            return "OK";
         }
 
         private void UpdateRelationships(ColeccionesFormas coleccion, int[] IDsFormasGeometricas)
         {
-            DeleteReferenceInFormaGeometricas(coleccion);
-
-            foreach (var row in IDsFormasGeometricas)
+            try
             {
-                var entity = _formaGeometricaRepository.GetById(row);
-                if (entity != null)
+                DeleteReferenceInFormaGeometricas(coleccion);
+
+                foreach (var row in IDsFormasGeometricas)
                 {
-                    coleccion.FormasGeometricas.Add(entity);
+                    var entity = _formaGeometricaRepository.GetById(row);
+                    if (entity != null)
+                    {
+                        coleccion.FormasGeometricas.Add(entity);
+                    }
                 }
+                _coleccionFormasRepository.Update(coleccion);
             }
-            _coleccionFormasRepository.Update(coleccion);
+            catch (Exception ex)
+            {
+
+                throw new InternalErrorException(ex.Message);
+            }
         }
     }
 }

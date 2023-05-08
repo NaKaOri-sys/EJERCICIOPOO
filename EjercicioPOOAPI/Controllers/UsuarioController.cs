@@ -11,29 +11,25 @@ namespace EjercicioPOO.API.Controllers
     public class UsuarioController : ControllerBase
     {
         private readonly IUsuarioService _usuarioService;
-        public UsuarioController(IUsuarioService usuarioService) 
+        public UsuarioController(IUsuarioService usuarioService)
         {
             _usuarioService = usuarioService;
         }
 
         [AllowAnonymous]
         [HttpPost]
-        public IActionResult Post(UsuarioDto usuario) 
+        public IActionResult Post(UsuarioDto usuario)
         {
             if (!ModelState.IsValid)
                 return BadRequest(usuario);
             var result = _usuarioService.CreateUser(usuario);
-            if (result == null)
-            {
-                return Conflict("El usuario ya está creado.");
-            }
 
             return Ok(result);
         }
-        
+
         [HttpGet]
         [Route("{usuario}")]
-        public IActionResult Get(string usuario) 
+        public IActionResult Get(string usuario)
         {
             if (!ModelState.IsValid)
                 return BadRequest(usuario);
@@ -41,9 +37,9 @@ namespace EjercicioPOO.API.Controllers
 
             return Ok(result);
         }
-        
+
         [HttpGet]
-        public IActionResult GetAll() 
+        public IActionResult GetAll()
         {
             var result = _usuarioService.FindAllUsers();
 
@@ -55,13 +51,9 @@ namespace EjercicioPOO.API.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(usuario);
-            var result = _usuarioService.UpdateUser(usuario);
-            if (result == null)
-            {
-                return Conflict("El usuario ya está creado.");
-            }
+            _usuarioService.UpdateUser(usuario);
 
-            return Ok(result);
+            return Ok();
         }
     }
 }

@@ -1,4 +1,5 @@
 using AutoMapper;
+using EjercicioPOO.API;
 using EjercicioPOO.API.Extensions;
 using EjercicioPOO.Application.CustomExceptionMiddleware;
 using EjercicioPOO.Application.Services.ColeccionFormas;
@@ -23,12 +24,16 @@ builder.Services.AddScoped<IColeccionFormasService, ColeccionFormasService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
+var mapperConfig = new MapperConfiguration(m =>
+{
+    m.AddProfile(new MappingProfile());
+});
+IMapper mapper = mapperConfig.CreateMapper();
+builder.Services.AddSingleton(mapper);
 var key = Encoding.ASCII.GetBytes(builder.Configuration.GetValue<string>("SecretKey"));
 builder.Services.AddAuthentication(x =>
 {
