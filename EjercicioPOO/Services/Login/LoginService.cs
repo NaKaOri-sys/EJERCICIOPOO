@@ -4,7 +4,9 @@ using EjercicioPOO.Application.Exceptions;
 using EjercicioPOO.Application.Services.Repository;
 using EjercicioPOO.Domain.Entitys;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using shared.Options;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -17,11 +19,15 @@ namespace EjercicioPOO.Application.Services.Login
     {
         private readonly IGenericRepository<Usuario> _genericRepository;
         private readonly IConfiguration _configuration;
+        private readonly LoginOptions _loginOptions;
 
-        public LoginService(IGenericRepository<Usuario> genericRepository, IConfiguration configuration)
+        public LoginService(IGenericRepository<Usuario> genericRepository,
+                            IConfiguration configuration,
+                            IOptions<LoginOptions> options)
         {
             _genericRepository = genericRepository;
             _configuration = configuration;
+            _loginOptions = options.Value;
         }
 
         public string GenerateBearer(LoginDto login) 
@@ -42,7 +48,7 @@ namespace EjercicioPOO.Application.Services.Login
                 var tokenDescriptor = new SecurityTokenDescriptor 
                 {
                     Subject = claims,
-                    Expires = DateTime.UtcNow.AddMinutes(10),
+                    Expires = DateTime.UtcNow.AddMinutes(_loginOptions.LifeTokenMinutes),
                     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
                 };
 

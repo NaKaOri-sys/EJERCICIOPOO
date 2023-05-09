@@ -12,5 +12,6 @@ namespace EjercicioPOO.Application.Services.FormaGeometricaService
         public void UpdateForma(FormaGeometricaDto request);
         public FormaGeometricaDto GetForma(int ID);
         public List<FormaGeometricaDto> GetAllFormas();
+        public void MapTrapecioInFormaGeometricaDto(FormaGeometricaDto shape);
     }
 }

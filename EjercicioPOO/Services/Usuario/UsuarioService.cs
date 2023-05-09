@@ -23,18 +23,27 @@ namespace EjercicioPOO.Application.Services.Usuarios
             var usuarioExistente = _usuariosRepository.GetAll().Where(x => x.User.Equals(usuario.User)).FirstOrDefault();
             if (usuarioExistente != null)
                 throw new InternalErrorException("El usuario ya existe.");
-            var hashPass = HashHelper.HashPasword(usuario.Password);
-            var usuarioNuevo = new Usuario { User = usuario.User, Password = hashPass.Password, Sal = hashPass.Salt};
-            _usuariosRepository.Insert(usuarioNuevo);
-            _usuariosRepository.Save();
 
-            return new UsuarioV { Id = usuarioNuevo.IdUser, Usuario = usuario.User };
+            var hashPass = HashHelper.HashPasword(usuario.Password);
+            var usuarioNuevo = new Usuario(usuario.User, hashPass.Password, hashPass.Salt);
+            try
+            {
+                _usuariosRepository.Insert(usuarioNuevo);
+                _usuariosRepository.Save();
+            }
+            catch (Exception ex)
+            {
+                throw new InternalErrorException(ex.Message);
+            }
+            var userV = new UsuarioV(usuarioNuevo.IdUser, usuarioNuevo.User);
+
+            return userV;
         }
 
         public UsuarioV FindUser(string usuario)
         {
             var usuarioExistente = _usuariosRepository.GetAll().Where(x => x.User.Equals(usuario)).FirstOrDefault();
-            var usuarioDto = new  UsuarioV{ Id = usuarioExistente.IdUser, Usuario = usuarioExistente.User };
+            var usuarioDto = new UsuarioV(usuarioExistente.IdUser, usuarioExistente.User);
 
             return usuarioDto;
         }
@@ -42,18 +51,20 @@ namespace EjercicioPOO.Application.Services.Usuarios
         public List<UsuarioV> FindAllUsers()
         {
             var usuarios = _usuariosRepository.GetAll()
-                .Select(x => new UsuarioV { Id = x.IdUser, Usuario = x.User})
+                .Select(x => new UsuarioV(x.IdUser, x.User))
                 .ToList();
 
             return usuarios;
         }
 
-        public void DeleteUser(UsuarioDto usuario)
+        public void DeleteUser(string usuario)
         {
             try
             {
-                var usuarioExistente = _usuariosRepository.GetAll().Where(x => x.User == usuario.User).FirstOrDefault();
-                _usuariosRepository.Delete(usuarioExistente);
+                var usuarioExistente = _usuariosRepository.GetAll().Where(x => x.User == usuario).FirstOrDefault();
+                if (usuarioExistente == null)
+                    throw new NotFoundException("No se pudo encontrar al usuario indicado.");
+                _usuariosRepository.Delete(usuarioExistente.IdUser);
                 _usuariosRepository.Save();
             }
             catch (Exception ex)
@@ -61,14 +72,14 @@ namespace EjercicioPOO.Application.Services.Usuarios
                 throw new InternalErrorException(ex.Message);
             }
         }
-        
+
         public void UpdateUser(UsuarioDto usuario)
         {
             try
             {
                 var usuarioExistente = _usuariosRepository.GetAll().Where(x => x.User == usuario.User).FirstOrDefault();
                 var hashPass = HashHelper.HashPasword(usuario.Password);
-                var usuarioNuevo = new Usuario { User = usuario.User, Password = hashPass.Password, Sal = hashPass.Salt };
+                var usuarioNuevo = new Usuario(usuario.User, hashPass.Password, hashPass.Salt);
                 _usuariosRepository.Update(usuarioExistente);
                 _usuariosRepository.Save();
             }

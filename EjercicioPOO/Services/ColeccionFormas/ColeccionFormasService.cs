@@ -1,5 +1,7 @@
-﻿using EjercicioPOO.Application.Dto;
+﻿using AutoMapper;
+using EjercicioPOO.Application.Dto;
 using EjercicioPOO.Application.Exceptions;
+using EjercicioPOO.Application.Services.FormaGeometricaService;
 using EjercicioPOO.Application.Services.Repository;
 using EjercicioPOO.Domain.Entitys;
 using Microsoft.EntityFrameworkCore;
@@ -13,12 +15,18 @@ namespace EjercicioPOO.Application.Services.ColeccionFormas
     {
         private readonly IGenericRepository<ColeccionesFormas> _coleccionFormasRepository;
         private readonly IGenericRepository<FormaGeometrica> _formaGeometricaRepository;
+        private readonly IMapper _mapper;
+        private readonly IFormaGeometricaService _formaGeometricaService;
 
         public ColeccionFormasService(IGenericRepository<ColeccionesFormas> coleccionFormasRepository,
-                                      IGenericRepository<FormaGeometrica> formaGeometricaRepository)
+                                      IGenericRepository<FormaGeometrica> formaGeometricaRepository,
+                                      IMapper mapper,
+                                      IFormaGeometricaService formaGeometricaService)
         {
             _coleccionFormasRepository = coleccionFormasRepository;
             _formaGeometricaRepository = formaGeometricaRepository;
+            _mapper = mapper;
+            _formaGeometricaService = formaGeometricaService;
         }
 
         public void CreateColeccion(int[] IDsFormasGeometricas)
@@ -37,7 +45,6 @@ namespace EjercicioPOO.Application.Services.ColeccionFormas
             }
             catch (Exception ex)
             {
-
                 throw new InternalErrorException(ex.Message);
             }
         }
@@ -53,18 +60,14 @@ namespace EjercicioPOO.Application.Services.ColeccionFormas
                 throw new NotFoundException("No se pudo obtener la colección indicada.");
             }
 
-            var dto = new ColeccionFormasDto
+            var dto = _mapper.Map<ColeccionFormasDto>(coleccion);
+            foreach (var shape in dto.formasGeometricas)
             {
-                ColeccionId = coleccion.ColeccionesFormasID,
-                formasGeometricas = coleccion.FormasGeometricas
-                .Select(x => new FormaGeometricaDto
+                if (shape.TipoID == 4)
                 {
-                    FormaGeometricaID = x.FormaGeometricaID,
-                    TipoID = x.TipoID,
-                    TipoForma = x.TipoDeFormas.Nombre,
-                    Lado = x.Lado
-                }).ToList()
-            };
+                    _formaGeometricaService.MapTrapecioInFormaGeometricaDto(shape);
+                }
+            }
 
             return dto;
         }
@@ -73,21 +76,20 @@ namespace EjercicioPOO.Application.Services.ColeccionFormas
         {
             var colecciones = _coleccionFormasRepository.GetAll()
                 .Include(x => x.FormasGeometricas).ThenInclude(o => o.TipoDeFormas)
-                .Select(z => new ColeccionFormasDto
+                .ToList();
+            var coleccionesDto = _mapper.Map<List<ColeccionFormasDto>>(colecciones);
+            foreach (var collection in coleccionesDto)
+            {
+                foreach (var shape in collection.formasGeometricas)
                 {
-                    ColeccionId = z.ColeccionesFormasID,
-                    formasGeometricas = z.FormasGeometricas
-                    .Select(m => new FormaGeometricaDto
+                    if (shape.TipoID == 4)
                     {
-                        FormaGeometricaID = m.FormaGeometricaID,
-                        TipoID = m.TipoID,
-                        TipoForma = m.TipoDeFormas.Nombre,
-                        Lado = m.Lado
-                    }).ToList()
-                }).ToList();
+                        _formaGeometricaService.MapTrapecioInFormaGeometricaDto(shape);
+                    }
+                }
+            }
 
-
-            return colecciones;
+            return coleccionesDto;
         }
 
         public void DeleteColeccion(int IdColeccion)

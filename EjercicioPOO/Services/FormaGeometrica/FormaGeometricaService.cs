@@ -74,11 +74,7 @@ namespace EjercicioPOO.Application.Services.FormaGeometricaService
             var dto = _mapper.Map<FormaGeometricaDto>(forma);
             if (forma.TipoID == 4)
             {
-                var trapecio = _trapecioRepository.GetAll().FirstOrDefault(x => x.FormaGeometricaID == forma.FormaGeometricaID);
-                dto.LadoBase = trapecio.BaseMayor;
-                dto.LadoDerecho = trapecio.LadoDerecho;
-                dto.LadoIzquierdo = trapecio.LadoIzquierdo;
-                dto.Altura = trapecio.Altura;
+                MapTrapecioInFormaGeometricaDto(dto);
             }
 
             return dto;
@@ -93,15 +89,20 @@ namespace EjercicioPOO.Application.Services.FormaGeometricaService
             {
                 if (shape.TipoID == 4)
                 {
-                    var trapecio = _trapecioRepository.GetAll().FirstOrDefault(x => x.FormaGeometricaID == shape.FormaGeometricaID);
-                    shape.LadoBase = trapecio.BaseMayor;
-                    shape.LadoDerecho = trapecio.LadoDerecho;
-                    shape.LadoIzquierdo = trapecio.LadoIzquierdo;
-                    shape.Altura = trapecio.Altura;
+                    MapTrapecioInFormaGeometricaDto(shape);
                 }
             }
 
             return result;
+        }
+
+        public void MapTrapecioInFormaGeometricaDto(FormaGeometricaDto shape)
+        {
+            var trapecio = _trapecioRepository.GetAll().FirstOrDefault(x => x.FormaGeometricaID == shape.FormaGeometricaID);
+            shape.LadoBase = trapecio.BaseMayor;
+            shape.LadoDerecho = trapecio.LadoDerecho;
+            shape.LadoIzquierdo = trapecio.LadoIzquierdo;
+            shape.Altura = trapecio.Altura;
         }
 
         private void FindAndRemoveShape(FormaGeometrica shapeToDelete)

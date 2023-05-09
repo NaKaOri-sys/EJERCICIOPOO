@@ -8,7 +8,7 @@ namespace EjercicioPOO.Application.Services.Usuarios
         public UsuarioV CreateUser(UsuarioDto usuario);
         public UsuarioV FindUser(string usuario);
         public List<UsuarioV> FindAllUsers();
-        public void DeleteUser(UsuarioDto usuario);
+        public void DeleteUser(string usuario);
         public void UpdateUser(UsuarioDto usuario);
     }
 }

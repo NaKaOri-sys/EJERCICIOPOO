@@ -12,9 +12,11 @@ using EjercicioPOO.Domain;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using shared.Options;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.GetSection("LoginOptions").Get<LoginOptions>();
 
 // Add services to the container.
 builder.Services.AddControllers();

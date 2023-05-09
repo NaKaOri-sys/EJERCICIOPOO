@@ -55,5 +55,17 @@ namespace EjercicioPOO.API.Controllers
 
             return Ok();
         }
+
+        [HttpDelete]
+        public IActionResult Delete(string usuario)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(usuario);
+            }
+            _usuarioService.DeleteUser(usuario);
+
+            return Ok();
+        }
     }
 }

@@ -1,5 +1,7 @@
-﻿using EjercicioPOO.Application.Dto;
+﻿using AutoMapper;
+using EjercicioPOO.Application.Dto;
 using EjercicioPOO.Application.Exceptions;
+using EjercicioPOO.Application.Services.FormaGeometricaService;
 using EjercicioPOO.Application.Services.Repository;
 using EjercicioPOO.Application.Traducciones;
 using EjercicioPOO.Domain.Entitys;
@@ -20,16 +22,22 @@ namespace EjercicioPOO.Application.Services.Reporte
         private readonly IGenericRepository<ColeccionesFormas> _coleccionFormasRepository;
         private readonly IGenericRepository<Idiomas> _idiomasRepository;
         private readonly IGenericRepository<Trapecio> _trapecioRepository;
+        private readonly IFormaGeometricaService _formaGeometricaService;
+        private readonly IMapper _mapper;
 
         public ReporteService(IGenericRepository<Reportes> reporteRepository,
                               IGenericRepository<ColeccionesFormas> coleccionFormasRepository,
                               IGenericRepository<Idiomas> idiomasRepository,
-                              IGenericRepository<Trapecio> trapecioRepository)
+                              IGenericRepository<Trapecio> trapecioRepository,
+                              IFormaGeometricaService formaGeometricaService,
+                              IMapper mapper)
         {
             _reportesRepository = reporteRepository;
             _coleccionFormasRepository = coleccionFormasRepository;
             _idiomasRepository = idiomasRepository;
             _trapecioRepository = trapecioRepository;
+            _formaGeometricaService = formaGeometricaService;
+            _mapper = mapper;
         }
 
         public void CreateReporte(int IdColeccion, IdiomasEnum idioma)
@@ -73,46 +81,25 @@ namespace EjercicioPOO.Application.Services.Reporte
             {
                 throw new NotFoundException("No se pudo encontrar el reporte solicitado.");
             }
-            var dto = new ReporteDto
+            var dto = _mapper.Map<ReporteDto>(reporte);
+            foreach (var shapes in dto.ColeccionFormas.formasGeometricas)
             {
-                ReporteID = reporte.ReportesID,
-                Idioma = new IdiomaDto { IdiomaID = reporte.IdiomasID, Nombre = reporte.Idioma.Idioma },
-                ColeccionFormas = new ColeccionFormasDto
+                if (shapes.TipoID == 4)
                 {
-                    ColeccionId = reporte.ColeccionFormas.ColeccionesFormasID,
-                    formasGeometricas = MappingFormasGeometricasToDto(reporte.ColeccionFormas.FormasGeometricas)
+                    _formaGeometricaService.MapTrapecioInFormaGeometricaDto(shapes);
                 }
-            };
-
-            var finalString = Imprimir(dto);
-
-            return finalString;
-        }
-
-        private List<FormaGeometricaDto> MappingFormasGeometricasToDto(List<FormaGeometrica> formasGeometricas)
-        {
-            var result = new List<FormaGeometricaDto>();
-            foreach (var forma in formasGeometricas)
-            {
-                var dto = new FormaGeometricaDto
-                {
-                    FormaGeometricaID = forma.FormaGeometricaID,
-                    Lado = forma.Lado,
-                    Tipo = (FormasEnum)forma.TipoID,
-                    TipoID = forma.TipoID
-                };
-                if (forma.TipoID == 4)
-                {
-                    var trapecio = _trapecioRepository.GetAll().FirstOrDefault(x => x.FormaGeometricaID == forma.FormaGeometricaID);
-                    dto.LadoBase = trapecio.BaseMayor;
-                    dto.LadoDerecho = trapecio.LadoDerecho;
-                    dto.LadoIzquierdo = trapecio.LadoIzquierdo;
-                    dto.Altura = trapecio.Altura;
-                }
-                result.Add(dto);
             }
 
-            return result;
+            try
+            {
+                var finalString = Imprimir(dto);
+
+                return finalString;
+            }
+            catch (Exception ex)
+            {
+                throw new InternalErrorException(ex.Message);
+            }
         }
 
         public void DeleteReporte(int IdReporte)
