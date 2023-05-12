@@ -1,8 +1,11 @@
 ﻿@page
 @model FrontEnd.Pages.ReportesModel
 @{
-    ViewData["Title"] = "Reportes Formas Geometricas";
+    ViewData["Title"] = "Reportes";
 }
+@if (!Model.IsAuntenticated)
+{
+    
 <div class="modal" tabindex="-1" id="modalError">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -20,15 +23,21 @@
         </div>
     </div>
 </div>
+}
 <div>
-    <select class="form-select" id="reportesList">
-    <option selected disabled>Reportes disponibles para ver</option>
+    <select class="form-select" id="reportesList" asp>
+        <option value="default" selected disabled>Reportes disponibles para ver</option>
         <option value="ten">10</option>
         <option value="eleven">11</option>
     </select>
+    <a id="hiddenSelect" name="ID" hidden></a>
+    <form method="post">
+        <input class="btn btn-primary" id="btnShow" type="submit" value="Mostrar">
+    </form>
 </div>
 <div id="content"></div>
 @section Scripts
 {
 <script src="~/js/Reportes.js"></script>
+<script src="~/js/site.js"></script>
 }

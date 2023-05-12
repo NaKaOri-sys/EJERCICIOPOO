@@ -16,8 +16,7 @@ using shared.Options;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.GetSection("LoginOptions").Get<LoginOptions>();
-
+builder.Services.Configure<LoginOptions>(builder.Configuration.GetSection("LoginOptions"));
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddScoped<IFormaGeometricaService, FormaGeometricaService>();

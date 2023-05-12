@@ -6,26 +6,21 @@ $('#formLogin').on('click', '#loginButton', {}, function () {
     if (!inputCompleto($('#inputPassword'))) {
         return;
     }
-    let uriLogin = 'https://localhost:7045/api/Login';
-    let data = JSON.stringify({
-        "user": $('#formLogin').find('#inputUsername').val(),
-        "password": $('#formLogin').find('#inputPassword').val()
-    });
     $('#formLogin').find('#loginSpinner').show();
     $.ajax({
-        url: uriLogin,
-        type: "POST",
-        data: data,
-        contentType: "application/json; charset=utf-8",
+        url: '/Login',
+        success: function (response, textStatus, xhr) {
+            $('#formLogin').find('#loginSpinner').hide();
+            if (xhr.getResponseHeader('X-IsAuthenticated') === 'true') {
+                window.location.href = "/Reportes";
+            } else {
+                window.location.href = "/Error";
+            }
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            $('#formLogin').find('#loginSpinner').hide();
+            window.location.href = "/Error";
+        }
     })
-        .done(function (response) {
-            window.sessionStorage.setItem("bearer_token", response);
-            $('#formLogin').find('#loginSpinner').hide();
-            window.location.href = "/Reportes"
-        })
-        .fail(function (response) {
-            $('#formLogin').find('#loginSpinner').hide();
-            window.location.href = "/Error"
-        })
-        
+
 });

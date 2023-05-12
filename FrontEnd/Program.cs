@@ -1,4 +1,19 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using shared.Options;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<EndpointOptions>(builder.Configuration.GetSection("EndpointOptions"));
+builder.Services.Configure<CookiesOptions>(builder.Configuration.GetSection("CookiesOptions"));
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        options.Cookie.Name = "Token"; // Nombre de la cookie
+        options.Cookie.HttpOnly = true; // Accesible solo a través de HTTP
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // Tiempo de expiración de la cookie
+        options.SlidingExpiration = true; // Extender la expiración en cada solicitud
+        options.LoginPath = "/Login";
+    });
 
 // Add services to the container.
 builder.Services.AddRazorPages();
@@ -22,6 +37,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();

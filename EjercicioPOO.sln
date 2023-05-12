@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EjercicioPOO.Domain", "Ejer
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FrontEnd", "FrontEnd\FrontEnd.csproj", "{E642AE39-3DAC-4CD4-A711-FFF15647AEDF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "shared", "shared\shared.csproj", "{F36DC599-2DA1-4D19-8B74-7DB59BCFB956}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "shared", "shared\shared.csproj", "{F36DC599-2DA1-4D19-8B74-7DB59BCFB956}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

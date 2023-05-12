@@ -13,18 +13,10 @@ $('#formRegister').on('click', '#registerButton', {}, function () {
         return;
     }
 
-    let uriLogin = 'https://localhost:7045/api/Usuario';
-    let data = JSON.stringify({
-        "user": $('#formRegister').find('#inputUsername').val(),
-        "password": $('#formRegister').find('#inputPassword').val(),
-        "confirmarPassword": $('#formRegister').find('#confirmPassword').val()
-    });
     $('#formRegister').find('#registerSpinner').show();
     $.ajax({
-        url: uriLogin,
+        url: "/Register",
         type: "POST",
-        data: data,
-        contentType: "application/json; charset=utf-8",
     })
         .done(function (response) {
             $('#formRegister').find('#registerSpinner').hide();
