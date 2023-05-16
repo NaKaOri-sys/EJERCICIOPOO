@@ -42,33 +42,47 @@ namespace EjercicioPOO.Application.Services.Reporte
 
         public void CreateReporte(int IdColeccion, IdiomasEnum idioma)
         {
-            if (IdColeccion <= 0 || idioma.Equals(0))
+            if (IdColeccion <= 0 || idioma == 0)
             {
                 throw new BadRequestException("El Id debe ser mayor a 0, se debe seleccionar un idioma para continuar.");
             }
 
-            var reporte = new Reportes
+            try
             {
-                ColeccionFormas = _coleccionFormasRepository.GetById(IdColeccion),
-                Idioma = _idiomasRepository.GetById((int)idioma)
-            };
-            _reportesRepository.Insert(reporte);
-            _reportesRepository.Save();
+                var reporte = new Reportes
+                {
+                    ColeccionFormas = _coleccionFormasRepository.GetById(IdColeccion),
+                    Idioma = _idiomasRepository.GetById((int)idioma)
+                };
+                _reportesRepository.Insert(reporte);
+                _reportesRepository.Save();
+            }
+            catch (Exception ex)
+            {
+                throw new InternalErrorException(ex.Message);
+            }
         }
 
         public void UpdateReporte(int IdReporte, int IdColeccion, IdiomasEnum idioma)
         {
-            if (IdReporte <= 0 || IdColeccion <= 0 || idioma.Equals(0))
+            if (IdReporte <= 0 || IdColeccion <= 0 || idioma == 0)
             {
                 throw new BadRequestException("El IdReporte debe ser mayor a 0, el IdColección debe ser mayor a 0, debe ingresar un idioma para continuar.");
             }
 
-            var reporte = _reportesRepository.GetById(IdReporte);
-            reporte.ColeccionFormas = _coleccionFormasRepository.GetById(IdColeccion);
-            reporte.Idioma = _idiomasRepository.GetById((int)idioma);
+            try
+            {
+                var reporte = _reportesRepository.GetById(IdReporte);
+                reporte.ColeccionFormas = _coleccionFormasRepository.GetById(IdColeccion);
+                reporte.Idioma = _idiomasRepository.GetById((int)idioma);
 
-            _reportesRepository.Update(reporte);
-            _reportesRepository.Save();
+                _reportesRepository.Update(reporte);
+                _reportesRepository.Save();
+            }
+            catch (Exception ex)
+            {
+                throw new InternalErrorException(ex.Message);
+            }
         }
 
         public string GetReporte(int IdReporte)
@@ -82,16 +96,16 @@ namespace EjercicioPOO.Application.Services.Reporte
                 throw new NotFoundException("No se pudo encontrar el reporte solicitado.");
             }
             var dto = _mapper.Map<ReporteDto>(reporte);
-            foreach (var shapes in dto.ColeccionFormas.formasGeometricas)
-            {
-                if (shapes.TipoID == 4)
-                {
-                    _formaGeometricaService.MapTrapecioInFormaGeometricaDto(shapes);
-                }
-            }
-
             try
             {
+                foreach (var shapes in dto.ColeccionFormas.formasGeometricas)
+                {
+                    if (shapes.TipoID == 4)
+                    {
+                        _formaGeometricaService.MapTrapecioInFormaGeometricaDto(shapes);
+                    }
+                }
+
                 var finalString = Imprimir(dto);
 
                 return finalString;
@@ -110,6 +124,11 @@ namespace EjercicioPOO.Application.Services.Reporte
             }
             try
             {
+                var reporteExistente = _reportesRepository.GetById(IdReporte);
+                if (reporteExistente == null)
+                {
+                    throw new NotFoundException("The given report dont exist.");
+                }
                 _reportesRepository.Delete(IdReporte);
                 _reportesRepository.Save();
             }
