@@ -50,7 +50,7 @@ namespace EjercicioPOO.Tests
             };
             return trapecio;
         }
-        private FormaGeometricaDto CreateFormaGeometricaDto(FormasEnum forma)
+        public static FormaGeometricaDto CreateFormaGeometricaDto(FormasEnum forma)
         {
             var shape = new Fixture().Create<FormaGeometricaDto>();
             shape.FormaGeometricaID = 1;
@@ -61,6 +61,7 @@ namespace EjercicioPOO.Tests
             shape.Area = 10;
             shape.Altura = 10;
             shape.Tipo = forma;
+            shape.TipoID = (int)forma;
 
             return shape;
         }

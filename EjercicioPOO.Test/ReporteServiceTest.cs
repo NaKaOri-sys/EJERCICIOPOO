@@ -7,6 +7,7 @@ using EjercicioPOO.Application.Services.Reporte;
 using EjercicioPOO.Application.Services.Repository;
 using EjercicioPOO.Domain.Entitys;
 using EjercicioPOO.Enum;
+using EjercicioPOO.Tests;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
@@ -39,26 +40,13 @@ namespace EjercicioPOO.Test
         }
 
         #region UtilityMethods
-        private FormaGeometricaDto CreateTrapecioInFormaGeometricaDto()
-        {
-            var shape = new Fixture().Create<FormaGeometricaDto>();
-            shape.Lado = 10;
-            shape.LadoBase = 10;
-            shape.LadoIzquierdo = 10;
-            shape.LadoDerecho = 10;
-            shape.Area = 10;
-            shape.Altura = 10;
-            shape.Tipo = FormasEnum.Trapecio;
-
-            return shape;
-        }
 
         private ReporteDto CreateReporteDto(int ID)
         {
             var reporte = new Fixture().Create<ReporteDto>();
             reporte.ReporteID = ID;
             reporte.Idioma.IdiomaID = ID;
-            reporte.ColeccionFormas.formasGeometricas = new List<FormaGeometricaDto> { CreateTrapecioInFormaGeometricaDto() };
+            reporte.ColeccionFormas.formasGeometricas = new List<FormaGeometricaDto> { FormaGeometricaServiceTest.CreateFormaGeometricaDto(FormasEnum.Trapecio) };
 
             return reporte;
         }

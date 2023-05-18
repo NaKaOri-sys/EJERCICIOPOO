@@ -61,12 +61,20 @@ namespace EjercicioPOO.Application.Services.ColeccionFormas
             }
 
             var dto = _mapper.Map<ColeccionFormasDto>(coleccion);
-            foreach (var shape in dto.formasGeometricas)
+            try
             {
-                if (shape.TipoID == 4)
+                foreach (var shape in dto.formasGeometricas)
                 {
-                    _formaGeometricaService.MapTrapecioInFormaGeometricaDto(shape);
+                    if (shape.TipoID == 4)
+                    {
+                        _formaGeometricaService.MapTrapecioInFormaGeometricaDto(shape);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+
+                throw new InternalErrorException(ex.Message);
             }
 
             return dto;
@@ -77,16 +85,28 @@ namespace EjercicioPOO.Application.Services.ColeccionFormas
             var colecciones = _coleccionFormasRepository.GetAll()
                 .Include(x => x.FormasGeometricas).ThenInclude(o => o.TipoDeFormas)
                 .ToList();
-            var coleccionesDto = _mapper.Map<List<ColeccionFormasDto>>(colecciones);
-            foreach (var collection in coleccionesDto)
+            if (colecciones == null || colecciones.Count == 0)
             {
-                foreach (var shape in collection.formasGeometricas)
+                throw new NotFoundException("The collection cannot be found.");
+            }
+
+            var coleccionesDto = _mapper.Map<List<ColeccionFormasDto>>(colecciones);
+            try
+            {
+                foreach (var collection in coleccionesDto)
                 {
-                    if (shape.TipoID == 4)
+                    foreach (var shape in collection.formasGeometricas)
                     {
-                        _formaGeometricaService.MapTrapecioInFormaGeometricaDto(shape);
+                        if (shape.TipoID == 4)
+                        {
+                            _formaGeometricaService.MapTrapecioInFormaGeometricaDto(shape);
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                throw new InternalErrorException(ex.Message);
             }
 
             return coleccionesDto;
@@ -97,10 +117,17 @@ namespace EjercicioPOO.Application.Services.ColeccionFormas
             var coleccion = _coleccionFormasRepository.GetById(IdColeccion);
             if (coleccion == null)
                 throw new NotFoundException("No se pudo encontrar la colección indicada.");
-            DeleteReferenceInFormaGeometricas(coleccion);
+            try
+            {
+                DeleteReferenceInFormaGeometricas(coleccion);
 
-            _coleccionFormasRepository.Delete(coleccion);
-            _coleccionFormasRepository.Save();
+                _coleccionFormasRepository.Delete(coleccion);
+                _coleccionFormasRepository.Save();
+            }
+            catch (Exception ex)
+            {
+                throw new InternalErrorException(ex.Message);
+            }
         }
 
         private void DeleteReferenceInFormaGeometricas(ColeccionesFormas coleccion)
@@ -116,12 +143,13 @@ namespace EjercicioPOO.Application.Services.ColeccionFormas
         public void UpdateColeccion(int IdColeccion, int[] IDsFormasGeometricas)
         {
             var coleccion = _coleccionFormasRepository.GetById(IdColeccion);
-            UpdateRelationships(coleccion, IDsFormasGeometricas);
-
             if (coleccion == null)
             {
-                throw new InternalErrorException("No se pudo actualizar la colección indicada.");
+                throw new NotFoundException("No se pudo actualizar la colección indicada.");
             }
+
+            UpdateRelationships(coleccion, IDsFormasGeometricas);
+
             _coleccionFormasRepository.Save();
         }
 
