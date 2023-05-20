@@ -15,16 +15,7 @@ $('#formRegister').on('click', '#registerButton', {}, function () {
 
     $('#formRegister').find('#registerSpinner').show();
     $.ajax({
-        url: "/Register",
-        type: "POST",
+        url: "/Register"
     })
-        .done(function (response) {
-            $('#formRegister').find('#registerSpinner').hide();
-            window.location.href = "/Login"
-        })
-        .fail(function (response) {
-            $('#formRegister').find('#registerSpinner').hide();
-            window.location.href = "/Error"
-        })
 
 });

@@ -5,24 +5,25 @@
     $('#modalError').hide();
     return;
 });
+let cookie = getCookieValue("Token");
 $('#btnShow').on('click', function () {
+    if (cookie === null) {
+        $('#modalError').show();
+        return;
+    }
     if ($('#reportesList option:selected').val() === 'default') {
         alert('Se debe seleccionar un reporte para continuar.');
         return;
     }
     else {
-        $('#hiddenSelect').val($('#reportesList option:selected').text());
+        $('#HiddenInput').val($('#reportesList option:selected').text());
         $.ajax({
-            url: '/Reportes',
+            url: '/Reportes?handler=Reporte&ID=' + $('#HiddenInput').val(),
             success: function (data) {
-                $('#content').html(data);
+                $('#resultado').html(data);
             },
-            error: function (xhr, status) {
-                if (status === 401) {
-                    $('#modalError').show();
-                    return;
-                }
-                alert("Sorry, there was a problem!");
+            error: function (xhr, status, errorThrown) {
+                alert("Sorry, there was a problem!" + errorThrown);
             }
         });
     }

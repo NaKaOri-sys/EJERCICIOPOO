@@ -1,5 +1,5 @@
 using FrontEnd.DTO;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -8,7 +8,6 @@ using System.Text;
 
 namespace FrontEnd.Pages
 {
-    [AllowAnonymous]
     public class RegisterModel : PageModel
     {
         private readonly EndpointOptions _endpointOptions;
@@ -21,7 +20,7 @@ namespace FrontEnd.Pages
         public void OnGet()
         {
         }
-        public async void OnPost(RegisterDTO register) 
+        public async Task<IActionResult> OnPost(RegisterDTO register)
         {
             var httpClient = new HttpClient();
             var content = new StringContent(JsonConvert.SerializeObject(register), Encoding.UTF8, "application/json");
@@ -30,10 +29,13 @@ namespace FrontEnd.Pages
                 var response = await httpClient.PostAsync(_endpointOptions.Register, content);
 
                 response.EnsureSuccessStatusCode();
+
+                return Redirect("/Login");
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                HttpContext.Session.SetString("MensajeError", "Hubo un error en la petición:" + ex.Message);
+                return Redirect("/Error");
             }
         }
     }

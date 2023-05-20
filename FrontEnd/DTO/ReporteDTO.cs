@@ -5,6 +5,6 @@ namespace FrontEnd.DTO
     public class ReporteDTO
     {
         [BindProperty]
-        public int ID { get; set; }
+        public string ID { get; set; }
     }
 }

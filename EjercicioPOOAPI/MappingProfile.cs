@@ -21,13 +21,10 @@ namespace EjercicioPOO.API
                 .ForMember(a => a.ReporteID, s => s.MapFrom(d => d.ReportesID));
             CreateMap<FormaGeometricaDto, Trapecio>()
                 .ForMember(a => a.BaseMayor, s => s.MapFrom(d => d.LadoBase))
-                .ForMember(a => a.BaseMenor, s => s.MapFrom(d => d.Lado));
+                .ForMember(a => a.BaseMenor, s => s.MapFrom(d => d.Lado)).ReverseMap();
             CreateMap<TrapecioDto, Trapecio>()
                 .ForMember(a => a.BaseMayor, s => s.MapFrom(d => d.LadoBase))
                 .ForMember(a => a.BaseMenor, s => s.MapFrom(d => d.Lado));
-            CreateMap<Trapecio, FormaGeometricaDto>()
-                .ForMember(a => a.LadoBase, s => s.MapFrom(d => d.BaseMayor))
-                .ForMember(a => a.Lado, s => s.MapFrom(d => d.BaseMenor));
             CreateMap<TrianguloEquilateroDto, TrianguloEquilatero>();
             CreateMap<UsuarioDto, Usuario>();
             CreateMap<ColeccionesFormas, ColeccionFormasDto>()

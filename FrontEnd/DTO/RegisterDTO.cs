@@ -9,6 +9,6 @@ namespace FrontEnd.DTO
         [BindProperty]
         public string password { get; set; }
         [BindProperty]
-        public string confirmPassword { get; set; }
+        public string confirmarPassword { get; set; }
     }
 }
