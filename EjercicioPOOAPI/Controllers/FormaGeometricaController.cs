@@ -1,6 +1,5 @@
 ﻿using EjercicioPOO.Application.Dto;
 using EjercicioPOO.Application.Services.FormaGeometricaService;
-using EjercicioPOO.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,15 +18,11 @@ namespace EjercicioPOO.API.Controllers
         }
 
         [HttpPost]
-        public ActionResult Post(FormaGeometricaDto request)
+        public ActionResult Post([FromForm] FormaGeometricaDto request)
         {
             var response = _formaGeometrica.CreateForma(request);
-            if (response == null)
-            {
-                throw new Exception("Error interno");
-            }
 
-            return Ok();
+            return Ok(response);
         }
 
         [HttpGet]
@@ -35,10 +30,6 @@ namespace EjercicioPOO.API.Controllers
         public FormaGeometricaDto Get(int ID)
         {
             var forma = _formaGeometrica.GetForma(ID);
-            if (forma == null)
-            {
-                throw new Exception("Not Found");
-            }
 
             return forma;
         }
@@ -47,24 +38,16 @@ namespace EjercicioPOO.API.Controllers
         public List<FormaGeometricaDto> GetAll()
         {
             var forma = _formaGeometrica.GetAllFormas();
-            if (forma == null)
-            {
-                throw new Exception("Not Found");
-            }
 
             return forma;
         }
 
         [HttpDelete]
-        public ActionResult Delete(int ID)
+        public ActionResult Delete([FromQuery] int ID)
         {
-            var response = _formaGeometrica.DeleteForma(ID);
-            if (response == null)
-            {
-                return NotFound("No se encontro la forma geometrica indicada.");
-            }
+            _formaGeometrica.DeleteForma(ID);
 
-            return Ok("Se borró exitosamente.");
+            return Ok();
         }
 
         [HttpPut]
@@ -72,11 +55,9 @@ namespace EjercicioPOO.API.Controllers
         {
             if (request.FormaGeometricaID <= 0)
                 return BadRequest("Ingrese un ID superior a 0");
-            var response = _formaGeometrica.UpdateForma(request);
-            if (response == null)
-                throw new Exception("ERROR INTERNO");
+            _formaGeometrica.UpdateForma(request);
 
-            return Ok("Se actualizó la entidad con éxito.");
+            return Ok();
         }
     }
 }

@@ -5,9 +5,9 @@ namespace EjercicioPOO.Application.Services.ColeccionFormas
 {
     public interface IColeccionFormasService
     {
-        public string CreateColeccion(int[] IDs);
-        public string UpdateColeccion(int ID, int[] IDs);
-        public string DeleteColeccion(int ID);
+        public void CreateColeccion(int[] IDs);
+        public void UpdateColeccion(int ID, int[] IDs);
+        public void DeleteColeccion(int ID);
         public ColeccionFormasDto GetColeccion(int ID);
         public List<ColeccionFormasDto> GetAllColeccion();
     }

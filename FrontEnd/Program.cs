@@ -1,8 +1,15 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using shared.Options;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<EndpointOptions>(builder.Configuration.GetSection("EndpointOptions"));
+builder.Services.Configure<CookiesOptions>(builder.Configuration.GetSection("CookiesOptions"));
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddCors();
+builder.Services.AddSession();
 
 var app = builder.Build();
 
@@ -19,9 +26,9 @@ app.UseCors(x => x
             .AllowAnyHeader());
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseSession();
 
 app.UseRouting();
-
 app.UseAuthorization();
 
 app.MapRazorPages();

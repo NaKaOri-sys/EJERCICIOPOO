@@ -1,4 +1,6 @@
-﻿using EjercicioPOO.Application.Dto;
+﻿using AutoMapper;
+using EjercicioPOO.Application.Dto;
+using EjercicioPOO.Application.Exceptions;
 using EjercicioPOO.Application.Services.Repository;
 using EjercicioPOO.Domain.Entitys;
 using EjercicioPOO.Enum;
@@ -16,25 +18,27 @@ namespace EjercicioPOO.Application.Services.FormaGeometricaService
         private readonly IGenericRepository<Cuadrado> _cuadradoRepository;
         private readonly IGenericRepository<TrianguloEquilatero> _trianguloRepository;
         private readonly IGenericRepository<Circulo> _circuloRepository;
-
+        private readonly IMapper _mapper;
         public FormaGeometricaService(IGenericRepository<FormaGeometrica> formaGeometricaRepository,
                                       IGenericRepository<Trapecio> trapecioRepository,
                                       IGenericRepository<Cuadrado> cuadradoRepository,
                                       IGenericRepository<TrianguloEquilatero> trianguloRepository,
-                                      IGenericRepository<Circulo> circuloRepository)
+                                      IGenericRepository<Circulo> circuloRepository,
+                                      IMapper mapper)
         {
             _formaGeometricaRepository = formaGeometricaRepository;
             _trapecioRepository = trapecioRepository;
             _cuadradoRepository = cuadradoRepository;
             _trianguloRepository = trianguloRepository;
             _circuloRepository = circuloRepository;
+            _mapper = mapper;
         }
 
         public FormaGeometrica CreateForma(FormaGeometricaDto request)
         {
             if (request.Lado <= 0)
             {
-                throw new Exception("BAD REQUEST");
+                throw new BadRequestException("El lado de la forma debe ser mayor a 0.");
             }
 
             var shapeToCreate = Create(request);
@@ -42,93 +46,128 @@ namespace EjercicioPOO.Application.Services.FormaGeometricaService
             return shapeToCreate;
         }
 
-        public string DeleteForma(int IdFormaGeometrica)
+        public void DeleteForma(int IdFormaGeometrica)
         {
             var formaGeometrica = _formaGeometricaRepository.GetById(IdFormaGeometrica);
             if (formaGeometrica == null)
-                return null;
+                throw new NotFoundException("No se pudo encontrar la forma indicada.");
             FindAndRemoveShape(formaGeometrica);
             _formaGeometricaRepository.Delete(formaGeometrica);
             _formaGeometricaRepository.Save();
-
-            return "OK";
         }
 
-        public string UpdateForma(FormaGeometricaDto request)
+        public void UpdateForma(FormaGeometricaDto request)
         {
             var formaGeometrica = _formaGeometricaRepository.GetById(request.FormaGeometricaID);
             if (formaGeometrica == null)
-                return null;
+                throw new NotFoundException("No se pudo encontrar la forma indicada.");
             Update(formaGeometrica, request);
-
-            return "OK";
         }
 
         public FormaGeometricaDto GetForma(int IdFormaGeometrica)
         {
-            var forma = _formaGeometricaRepository.GetAll().Include(x => x.TipoDeFormas).FirstOrDefault(m => m.FormaGeometricaID == IdFormaGeometrica);
-            var dto = new FormaGeometricaDto
+            var forma = _formaGeometricaRepository.GetAll()?.Include(x => x.TipoDeFormas).FirstOrDefault(m => m.FormaGeometricaID == IdFormaGeometrica);
+            if (forma == null)
             {
-                FormaGeometricaID = forma.FormaGeometricaID,
-                TipoID = forma.TipoID,
-                TipoForma = forma.TipoDeFormas.Nombre
-            };
+                throw new NotFoundException("No se pudo obtener la forma solicitada.");
+            }
+
+            var dto = _mapper.Map<FormaGeometricaDto>(forma);
+            if (forma.TipoID == 4)
+            {
+                MapTrapecioInFormaGeometricaDto(dto);
+            }
 
             return dto;
         }
 
         public List<FormaGeometricaDto> GetAllFormas()
         {
-            var formas = _formaGeometricaRepository.GetAll()
-                .Include(z => z.TipoDeFormas)
-                .Select(x => new FormaGeometricaDto
+            try
+            {
+                var formas = _formaGeometricaRepository.GetAll()
+                .Include(z => z.TipoDeFormas).ToList();
+                if (formas == null)
                 {
-                    FormaGeometricaID = x.FormaGeometricaID,
-                    TipoID = x.TipoID,
-                    TipoForma = x.TipoDeFormas.Nombre
-                }).ToList();
+                    throw new NotFoundException("No shapes are saved in db.");
+                }
+                var result = _mapper.Map<List<FormaGeometricaDto>>(formas);
+                foreach (var shape in result)
+                {
+                    if (shape.TipoID == 4)
+                    {
+                        MapTrapecioInFormaGeometricaDto(shape);
+                    }
+                }
 
-            return formas;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new InternalErrorException(ex.Message);
+            }
+        }
+
+        public void MapTrapecioInFormaGeometricaDto(FormaGeometricaDto shape)
+        {
+            var trapecio = _trapecioRepository.GetAll().FirstOrDefault(x => x.FormaGeometricaID == shape.FormaGeometricaID);
+            shape.LadoBase = trapecio.BaseMayor;
+            shape.LadoDerecho = trapecio.LadoDerecho;
+            shape.LadoIzquierdo = trapecio.LadoIzquierdo;
+            shape.Altura = trapecio.Altura;
         }
 
         private void FindAndRemoveShape(FormaGeometrica shapeToDelete)
         {
-            var cuadrados = _cuadradoRepository.GetAll()?.FirstOrDefault(x => x.FormaGeometricaID == shapeToDelete.FormaGeometricaID);
-            var circulos = _circuloRepository.GetAll()?.FirstOrDefault(x => x.FormaGeometricaID == shapeToDelete.FormaGeometricaID);
-            var triangulos = _trianguloRepository.GetAll()?.FirstOrDefault(x => x.FormaGeometricaID == shapeToDelete.FormaGeometricaID);
-            var trapecios = _trapecioRepository.GetAll()?.FirstOrDefault(x => x.FormaGeometricaID == shapeToDelete.FormaGeometricaID);
+            try
+            {
+                var cuadrados = _cuadradoRepository.GetAll()?.FirstOrDefault(x => x.FormaGeometricaID == shapeToDelete.FormaGeometricaID);
+                var circulos = _circuloRepository.GetAll()?.FirstOrDefault(x => x.FormaGeometricaID == shapeToDelete.FormaGeometricaID);
+                var triangulos = _trianguloRepository.GetAll()?.FirstOrDefault(x => x.FormaGeometricaID == shapeToDelete.FormaGeometricaID);
+                var trapecios = _trapecioRepository.GetAll()?.FirstOrDefault(x => x.FormaGeometricaID == shapeToDelete.FormaGeometricaID);
 
-            if (cuadrados != null)
-            {
-                _cuadradoRepository.Delete(cuadrados);
-                return;
+                if (cuadrados != null)
+                {
+                    _cuadradoRepository.Delete(cuadrados);
+                    return;
+                }
+                if (circulos != null)
+                {
+                    _circuloRepository.Delete(circulos);
+                    return;
+                }
+                if (triangulos != null)
+                {
+                    _trianguloRepository.Delete(triangulos);
+                    return;
+                }
+                if (trapecios != null)
+                {
+                    _trapecioRepository.Delete(trapecios);
+                    return;
+                }
             }
-            if (circulos != null)
+            catch (Exception ex)
             {
-                _circuloRepository.Delete(circulos);
-                return;
-            }
-            if (triangulos != null)
-            {
-                _trianguloRepository.Delete(triangulos);
-                return;
-            }
-            if (trapecios != null)
-            {
-                _trapecioRepository.Delete(trapecios);
-                return;
+                throw new InternalErrorException(ex.Message);
             }
         }
 
         private void Update(FormaGeometrica shape, FormaGeometricaDto formaGeometricaDto)
         {
-            shape.Lado = formaGeometricaDto.Lado;
-            shape.TipoID = (int)formaGeometricaDto.Tipo;
-            _formaGeometricaRepository.Update(shape);
-            _formaGeometricaRepository.Save();
+            try
+            {
+                shape = _mapper.Map<FormaGeometrica>(formaGeometricaDto);
+                _formaGeometricaRepository.Update(shape);
+                _formaGeometricaRepository.Save();
 
-            if (formaGeometricaDto.Tipo.Equals(FormasEnum.Trapecio))
-                UpdateTrapecioEntity(formaGeometricaDto, shape.FormaGeometricaID);
+                if (formaGeometricaDto.Tipo.Equals(FormasEnum.Trapecio))
+                    UpdateTrapecioEntity(formaGeometricaDto);
+            }
+            catch (Exception ex)
+            {
+                throw new InternalErrorException(ex.Message);
+            }
         }
 
         private FormaGeometrica Create(FormaGeometricaDto formaGeometrica)
@@ -149,10 +188,11 @@ namespace EjercicioPOO.Application.Services.FormaGeometricaService
                     CreateCirculoEntity(shape);
                     break;
                 case FormasEnum.Trapecio:
-                    CreateTrapecioEntity(formaGeometrica, shape.FormaGeometricaID);
+                    formaGeometrica.FormaGeometricaID = shape.FormaGeometricaID;
+                    CreateTrapecioEntity(formaGeometrica);
                     break;
                 default:
-                    throw new Exception("ERROR 500");
+                    throw new InternalErrorException("No se pudo crear la forma solicitada.");
             }
 
             return shape;
@@ -160,37 +200,24 @@ namespace EjercicioPOO.Application.Services.FormaGeometricaService
 
         private FormaGeometrica MappingFormaGeometrica(FormaGeometricaDto formaGeometrica)
         {
-            var shape = new FormaGeometrica
-            {
-                Lado = formaGeometrica.Lado,
-                TipoID = (int)formaGeometrica.Tipo
-            };
+            var shape = _mapper.Map<FormaGeometrica>(formaGeometrica);
 
             return shape;
         }
 
-        private void CreateTrapecioEntity(FormaGeometricaDto shape, int formaGeometricaID)
+        private void CreateTrapecioEntity(FormaGeometricaDto shape)
         {
-            var entity = new Trapecio
-            {
-                Altura = shape.Altura,
-                BaseMenor = shape.Lado,
-                BaseMayor = shape.LadoBase,
-                LadoIzquierdo = shape.LadoIzquierdo,
-                LadoDerecho = shape.LadoDerecho,
-                FormaGeometricaID = formaGeometricaID,
-            };
+            var entity = _mapper.Map<Trapecio>(shape);
             _trapecioRepository.Insert(entity);
             _trapecioRepository.Save();
         }
-        private void UpdateTrapecioEntity(FormaGeometricaDto dto, int formaGeometricaID)
+        private void UpdateTrapecioEntity(FormaGeometricaDto dto)
         {
-            var entity = _trapecioRepository.GetAll().FirstOrDefault(x => x.FormaGeometricaID == formaGeometricaID);
-            entity.Altura = dto.Altura;
-            entity.BaseMenor = dto.Lado;
-            entity.BaseMayor = dto.LadoBase;
-            entity.LadoIzquierdo = dto.LadoIzquierdo;
-            entity.LadoDerecho = dto.LadoDerecho;
+            var entity = _trapecioRepository.GetAll().FirstOrDefault(x => x.FormaGeometricaID == dto.FormaGeometricaID);
+            if (entity == null)
+                throw new NotFoundException("No se pudo encontrar la forma solicitada.");
+
+            entity = _mapper.Map<Trapecio>(dto);
 
             _trapecioRepository.Update(entity);
             _trapecioRepository.Save();
@@ -198,30 +225,21 @@ namespace EjercicioPOO.Application.Services.FormaGeometricaService
 
         private void CreateCirculoEntity(FormaGeometrica shape)
         {
-            var entity = new Circulo
-            {
-                FormaGeometricaID = shape.FormaGeometricaID
-            };
+            var entity = _mapper.Map<Circulo>(shape);
             _circuloRepository.Insert(entity);
             _circuloRepository.Save();
         }
 
         private void CreateTrianguloEquilateroEntity(FormaGeometrica shape)
         {
-            var entity = new TrianguloEquilatero
-            {
-                FormaGeometricaID = shape.FormaGeometricaID
-            };
+            var entity = _mapper.Map<TrianguloEquilatero>(shape);
             _trianguloRepository.Insert(entity);
             _trianguloRepository.Save();
         }
 
         private void CreateCuadradoEntity(FormaGeometrica shape)
         {
-            var entity = new Cuadrado
-            {
-                FormaGeometricaID = shape.FormaGeometricaID
-            };
+            var entity = _mapper.Map<Cuadrado>(shape);
             _cuadradoRepository.Insert(entity);
             _cuadradoRepository.Save();
         }

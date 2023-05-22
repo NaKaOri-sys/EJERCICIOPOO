@@ -1,4 +1,7 @@
 using AutoMapper;
+using EjercicioPOO.API;
+using EjercicioPOO.API.Extensions;
+using EjercicioPOO.Application.CustomExceptionMiddleware;
 using EjercicioPOO.Application.Services.ColeccionFormas;
 using EjercicioPOO.Application.Services.FormaGeometricaService;
 using EjercicioPOO.Application.Services.Login;
@@ -9,10 +12,11 @@ using EjercicioPOO.Domain;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using shared.Options;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.Configure<LoginOptions>(builder.Configuration.GetSection("LoginOptions"));
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddScoped<IFormaGeometricaService, FormaGeometricaService>();
@@ -21,12 +25,16 @@ builder.Services.AddScoped<IColeccionFormasService, ColeccionFormasService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
+var mapperConfig = new MapperConfiguration(m =>
+{
+    m.AddProfile(new MappingProfile());
+});
+IMapper mapper = mapperConfig.CreateMapper();
+builder.Services.AddSingleton(mapper);
 var key = Encoding.ASCII.GetBytes(builder.Configuration.GetValue<string>("SecretKey"));
 builder.Services.AddAuthentication(x =>
 {
@@ -69,6 +77,10 @@ app.UseCors(x => x
             .AllowAnyMethod()
             .AllowAnyHeader());
 app.UseHttpsRedirection();
+var logger = app.Services.GetRequiredService<ILogger<ExceptionMiddleware>>();
+//app.ConfigureExceptionHandler(logger);
+app.ConfigureCustomExceptionMiddleware();
+
 
 app.UseAuthentication();
 app.UseAuthorization();

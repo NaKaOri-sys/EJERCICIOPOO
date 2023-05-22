@@ -1,4 +1,7 @@
-﻿using EjercicioPOO.Application.Dto;
+﻿using AutoMapper;
+using EjercicioPOO.Application.Dto;
+using EjercicioPOO.Application.Exceptions;
+using EjercicioPOO.Application.Services.FormaGeometricaService;
 using EjercicioPOO.Application.Services.Repository;
 using EjercicioPOO.Application.Traducciones;
 using EjercicioPOO.Domain.Entitys;
@@ -19,51 +22,67 @@ namespace EjercicioPOO.Application.Services.Reporte
         private readonly IGenericRepository<ColeccionesFormas> _coleccionFormasRepository;
         private readonly IGenericRepository<Idiomas> _idiomasRepository;
         private readonly IGenericRepository<Trapecio> _trapecioRepository;
+        private readonly IFormaGeometricaService _formaGeometricaService;
+        private readonly IMapper _mapper;
 
         public ReporteService(IGenericRepository<Reportes> reporteRepository,
                               IGenericRepository<ColeccionesFormas> coleccionFormasRepository,
                               IGenericRepository<Idiomas> idiomasRepository,
-                              IGenericRepository<Trapecio> trapecioRepository)
+                              IGenericRepository<Trapecio> trapecioRepository,
+                              IFormaGeometricaService formaGeometricaService,
+                              IMapper mapper)
         {
             _reportesRepository = reporteRepository;
             _coleccionFormasRepository = coleccionFormasRepository;
             _idiomasRepository = idiomasRepository;
             _trapecioRepository = trapecioRepository;
+            _formaGeometricaService = formaGeometricaService;
+            _mapper = mapper;
         }
 
-        public string CreateReporte(int IdColeccion, IdiomasEnum idioma)
+        public void CreateReporte(int IdColeccion, IdiomasEnum idioma)
         {
-            if (IdColeccion <= 0)
+            if (IdColeccion <= 0 || idioma == 0)
             {
-                return null;
+                throw new BadRequestException("El Id debe ser mayor a 0, se debe seleccionar un idioma para continuar.");
             }
 
-            var reporte = new Reportes 
+            try
             {
-                ColeccionFormas = _coleccionFormasRepository.GetById(IdColeccion),
-                Idioma = _idiomasRepository.GetById((int)idioma)
-            };
-            _reportesRepository.Insert(reporte);
-            _reportesRepository.Save();
-
-            return "OK";
+                var reporte = new Reportes
+                {
+                    ColeccionFormas = _coleccionFormasRepository.GetById(IdColeccion),
+                    Idioma = _idiomasRepository.GetById((int)idioma)
+                };
+                _reportesRepository.Insert(reporte);
+                _reportesRepository.Save();
+            }
+            catch (Exception ex)
+            {
+                throw new InternalErrorException(ex.Message);
+            }
         }
 
-        public string UpdateReporte(int IdReporte, int IdColeccion, IdiomasEnum idioma)
+        public void UpdateReporte(int IdReporte, int IdColeccion, IdiomasEnum idioma)
         {
-            if (IdReporte <= 0 || IdColeccion <= 0)
+            if (IdReporte <= 0 || IdColeccion <= 0 || idioma == 0)
             {
-                return null;
+                throw new BadRequestException("El IdReporte debe ser mayor a 0, el IdColección debe ser mayor a 0, debe ingresar un idioma para continuar.");
             }
 
-            var reporte = _reportesRepository.GetById(IdReporte);
-            reporte.ColeccionFormas = _coleccionFormasRepository.GetById(IdColeccion);
-            reporte.Idioma = _idiomasRepository.GetById((int)idioma);
+            try
+            {
+                var reporte = _reportesRepository.GetById(IdReporte);
+                reporte.ColeccionFormas = _coleccionFormasRepository.GetById(IdColeccion);
+                reporte.Idioma = _idiomasRepository.GetById((int)idioma);
 
-            _reportesRepository.Update(reporte);
-            _reportesRepository.Save();
-
-            return "OK";
+                _reportesRepository.Update(reporte);
+                _reportesRepository.Save();
+            }
+            catch (Exception ex)
+            {
+                throw new InternalErrorException(ex.Message);
+            }
         }
 
         public string GetReporte(int IdReporte)
@@ -74,60 +93,49 @@ namespace EjercicioPOO.Application.Services.Reporte
                                              .FirstOrDefault(p => p.ReportesID == IdReporte);
             if (reporte == null)
             {
-                return null;
+                throw new NotFoundException("No se pudo encontrar el reporte solicitado.");
             }
-            var dto = new ReporteDto 
+            var dto = _mapper.Map<ReporteDto>(reporte);
+            try
             {
-                ReporteID = reporte.ReportesID,
-                Idioma = new IdiomaDto { IdiomaID = reporte.IdiomasID, Nombre = reporte.Idioma.Idioma},
-                ColeccionFormas = new ColeccionFormasDto 
+                foreach (var shapes in dto.ColeccionFormas.formasGeometricas)
                 {
-                    ColeccionId = reporte.ColeccionFormas.ColeccionesFormasID,
-                    formasGeometricas = MappingFormasGeometricasToDto(reporte.ColeccionFormas.FormasGeometricas)
+                    if (shapes.TipoID == 4)
+                    {
+                        _formaGeometricaService.MapTrapecioInFormaGeometricaDto(shapes);
+                    }
                 }
-            };
 
-            var finalString = Imprimir(dto);
+                var finalString = Imprimir(dto);
 
-            return finalString;
+                return finalString;
+            }
+            catch (Exception ex)
+            {
+                throw new InternalErrorException(ex.Message);
+            }
         }
 
-        private List<FormaGeometricaDto> MappingFormasGeometricasToDto(List<FormaGeometrica> formasGeometricas)
-        {
-            var result = new List<FormaGeometricaDto>();
-            foreach (var forma in formasGeometricas) 
-            {
-                var dto = new FormaGeometricaDto 
-                { 
-                    FormaGeometricaID = forma.FormaGeometricaID,
-                    Lado = forma.Lado,  
-                    Tipo = (FormasEnum)forma.TipoID,
-                    TipoID = forma.TipoID
-                };
-                if(forma.TipoID == 4)
-                {
-                    var trapecio = _trapecioRepository.GetAll().FirstOrDefault(x => x.FormaGeometricaID == forma.FormaGeometricaID);
-                    dto.LadoBase = trapecio.BaseMayor;
-                    dto.LadoDerecho = trapecio.LadoDerecho;
-                    dto.LadoIzquierdo = trapecio.LadoIzquierdo;
-                    dto.Altura = trapecio.Altura;
-                }
-                result.Add(dto);
-            }
-
-            return result;
-        }
-
-        public string DeleteReporte(int IdReporte)
+        public void DeleteReporte(int IdReporte)
         {
             if (IdReporte <= 0)
             {
-                return null;
+                throw new BadRequestException("El IdReporte debe ser mayor a 0.");
             }
-            _reportesRepository.Delete(IdReporte);
-            _reportesRepository.Save();
-
-            return "OK";
+            try
+            {
+                var reporteExistente = _reportesRepository.GetById(IdReporte);
+                if (reporteExistente == null)
+                {
+                    throw new NotFoundException("The given report dont exist.");
+                }
+                _reportesRepository.Delete(IdReporte);
+                _reportesRepository.Save();
+            }
+            catch (Exception ex)
+            {
+                throw new InternalErrorException(ex.Message);
+            }
         }
 
         public static string Imprimir(ReporteDto reporte)

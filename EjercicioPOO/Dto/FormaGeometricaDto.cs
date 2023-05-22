@@ -22,6 +22,7 @@ namespace EjercicioPOO.Application.Dto
             LadoIzquierdo = ladoIzquierdo;
             LadoDerecho = ladoDerecho;
             Tipo = TipoForma;
+            TipoID = (int)TipoForma;
         }
 
         public FormaGeometricaDto()
@@ -35,7 +36,7 @@ namespace EjercicioPOO.Application.Dto
         public decimal LadoDerecho { get; set; }
         public decimal Lado { get; set; }
         public int FormaGeometricaID { get; set; }
-        public int TipoID { get; set; } = 0;
+        public int TipoID { get; set; }
         public string TipoForma { get; set; }
         [JsonIgnore]
         public FormasEnum Tipo { get; set; }

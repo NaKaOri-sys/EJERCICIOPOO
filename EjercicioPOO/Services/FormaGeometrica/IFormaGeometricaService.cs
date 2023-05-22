@@ -8,9 +8,10 @@ namespace EjercicioPOO.Application.Services.FormaGeometricaService
     public interface IFormaGeometricaService
     {
         public FormaGeometrica CreateForma(FormaGeometricaDto request);
-        public string DeleteForma(int ID);
-        public string UpdateForma(FormaGeometricaDto request);
+        public void DeleteForma(int ID);
+        public void UpdateForma(FormaGeometricaDto request);
         public FormaGeometricaDto GetForma(int ID);
         public List<FormaGeometricaDto> GetAllFormas();
+        public void MapTrapecioInFormaGeometricaDto(FormaGeometricaDto shape);
     }
 }
